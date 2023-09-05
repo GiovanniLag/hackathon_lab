@@ -35,7 +35,7 @@ def ballIsMiddle(center_y, frame_height, treshold=3):
 
 def main():
     #open stream from camera
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     #block camera from changing auto exposure
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
     #cap.set(cv2.CAP_PROP_EXPOSURE, 0.1)
@@ -56,7 +56,7 @@ def main():
         #compute the absolute difference between the current frame and the next frame
         result = frame_diff(frame, cap)
         #find centroid of ball
-        center_x,center_y = frameCenter(result, 100)
+        center_x,center_y = frameCenter(result, 4000)
         #make result rgb so we can add a green circle
         result = cv2.cvtColor(result, cv2.COLOR_GRAY2RGB)
         #add centroid to frame as a green circle

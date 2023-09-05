@@ -1,88 +1,87 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+import time
+import pandas as pd
+from video_utils import saveVideo
 
-def frame_diff(prev_frame, cap):
-    ret, next_frame = cap.read()
-    diff = cv2.absdiff(prev_frame, next_frame)
-    diff = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-    diff = cv2.normalize(diff, None, 0, 255, cv2.NORM_MINMAX)
-    return diff
+#initialize result dataframe
+result = pd.DataFrame(columns=['frame', 'x', 'y'])
 
-def frameCenter(frame, area):
-    # Find contours in the bw frame
-    lowerLimit=[0,0,90]
-    upperLimit = [0,0,100]
-    hsv_image =  cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
-    hsv_image =  cv2.cvtColor(hsv_image, cv2.COLOR_RGB2HSV)
-    
-    blue_regions = cv2.inRange(hsv_image, np.array(lowerLimit), np.array(upperLimit))  
-    contours, _ = cv2.findContours(blue_regions, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    for contour in contours:
-        if cv2.contourArea(contour) > area: # Minimum contour area threshold
-            M = cv2.moments(contour)
-            if M["m00"] != 0:
-                center_x = M["m10"] / M["m00"]
-                center_y = M["m01"] / M["m00"]
-                print(f"Centroid of dot: (x, y) = ({center_x:.1f}, {center_y:.1f})")
-                return (center_x, center_y)
-    return (-1, -1)
-
-
-
-def ballIsMiddle(center_y, frame_height, treshold=3):
-    if center_y < frame_height/2 + treshold and center_y > frame_height/2 - treshold:
-        return True
+def get_centroid(contour):
+    M = cv2.moments(contour)
+    if M["m00"] != 0:
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
     else:
-        return False
+        cX, cY = 0, 0
+    return (cX, cY)
 
+kalman = cv2.KalmanFilter(4, 2)
+kalman.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32)
+kalman.transitionMatrix = np.array([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32)
+kalman.processNoiseCov = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32) * 0.001
+kalman.measurementNoiseCov = np.array([[1, 0], [0, 1]], np.float32) * 0.2
 
+cap = cv2.VideoCapture('test_data/ret_masked.avi')
 
+ret, prev_frame = cap.read()
+prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+prev_gray = cv2.GaussianBlur(prev_gray, (11, 11), 0)
 
-def main():
-    #open stream from camera
-    cap = cv2.VideoCapture(1)
-    #block camera from changing auto exposure
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-    #cap.set(cv2.CAP_PROP_EXPOSURE, 0.1)
-    #block camera from changing auto white balance
-    cap.set(cv2.CAP_PROP_AUTO_WB, 0.25)
-    cap.set(cv2.CAP_PROP_WB_TEMPERATURE, 0.01)
+#init kalman filter, first frame
+init = False
 
-    #create window
-    cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
-    
-    #get frame sizes
-    frame_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    frame_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+#to save video
+video_frames = []
 
-    #when q is pressed, quit
-    while True:
-        ret, frame = cap.read()
-        #compute the absolute difference between the current frame and the next frame
-        result = frame_diff(frame, cap)
-        #find centroid of ball
-        center_x,center_y = frameCenter(result, 4000)
-        #make result rgb so we can add a green circle
-        result = cv2.cvtColor(result, cv2.COLOR_GRAY2RGB)
-        #add centroid to frame as a green circle
-        cv2.circle(result, (int(center_x), int(center_y)), 10, (0, 255, 0), 1)
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-        #if ball is in the middle draw a line across the orizontal center of the frame
-        if ballIsMiddle(center_y, frame_height):
-            cv2.line(result, (0, 240), (640, 240), (255, 0, 0), 2)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (11, 11), 0)
 
+    frame_diff = cv2.absdiff(gray, prev_gray)
 
-        #show the result
-        cv2.imshow('frame', result)
-        if cv2.waitKey(1) & 0xFF == ord('q'): # press q to quit
-            cap.release()
-            cv2.destroyAllWindows()
-            break
+    _, thresh = cv2.threshold(frame_diff, 10, 255, cv2.THRESH_BINARY)
 
-    return
+    kernel = np.ones((5,5),np.uint8)
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
 
+    contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-if __name__ == '__main__':
-    main()
+    if len(contours) > 0:
+        c = max(contours, key=cv2.contourArea)
+        centroid = get_centroid(c)
+        #add circle for centroid in frame
+        cv2.circle(frame, centroid, 10, (0, 0, 255), 2)
+
+        if not init:
+            kalman.statePre = np.array([[centroid[0]], [centroid[1]], [0], [0]], np.float32)
+            init = True
+        
+        kalman.correct(np.array([np.float32(centroid[0]), np.float32(centroid[1])]))
+        predicted = kalman.predict()
+        
+        if centroid != (0, 0):
+            cv2.circle(frame, (int(predicted[0]), int(predicted[1])), 10, (0, 255, 255), 2)
+            result = pd.concat([result, pd.DataFrame({'frame': int(cap.get(cv2.CAP_PROP_POS_FRAMES)), 'x': int(predicted[0]), 'y': int(predicted[1])}, index=[0])], ignore_index=True)
+
+    cv2.imshow('Frame', frame)
+    video_frames.append(frame)
+    #time.sleep(0.1)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+    prev_gray = gray
+
+cap.release()
+cv2.destroyAllWindows()
+
+#save result
+result.to_csv('test_results/result_1.csv', index=False)
+
+#save video
+saveVideo(video_frames, 'test_data/results/result_1.avi', fps=29)

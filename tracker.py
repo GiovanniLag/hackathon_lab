@@ -11,7 +11,13 @@ def frame_diff(prev_frame, cap):
 
 def frameCenter(frame, area):
     # Find contours in the bw frame
-    contours, _ = cv2.findContours(frame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    lowerLimit=[0,0,90]
+    upperLimit = [0,0,100]
+    hsv_image =  cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+    hsv_image =  cv2.cvtColor(hsv_image, cv2.COLOR_RGB2HSV)
+    
+    blue_regions = cv2.inRange(hsv_image, np.array(lowerLimit), np.array(upperLimit))  
+    contours, _ = cv2.findContours(blue_regions, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     for contour in contours:
         if cv2.contourArea(contour) > area: # Minimum contour area threshold
@@ -22,6 +28,7 @@ def frameCenter(frame, area):
                 print(f"Centroid of dot: (x, y) = ({center_x:.1f}, {center_y:.1f})")
                 return (center_x, center_y)
     return (-1, -1)
+
 
 
 def ballIsMiddle(center_y, frame_height, treshold=3):

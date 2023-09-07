@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 import pandas as pd
-from video_utils import saveVideo
+from video_utils import saveVideo, startLiveCamera
 
 #initialize result dataframe
 result = pd.DataFrame(columns=['frame', 'x', 'y'])
@@ -23,6 +23,7 @@ kalman.processNoiseCov = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0,
 kalman.measurementNoiseCov = np.array([[1, 0], [0, 1]], np.float32) * 0.2
 
 cap = cv2.VideoCapture('test_data/ret_masked.avi')
+#cap = startLiveCamera(0)
 
 ret, prev_frame = cap.read()
 prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)

@@ -1,10 +1,11 @@
 import serial
-from pyinput import keyboard
+from pynput import keyboard
 
 global ser
 
 def on_press(key):
 	try:
+		#if i press "p" send "p" to arduino
 		if key.char == 'p':
 			ser.write(b'p')
 			print("sent p")
@@ -18,18 +19,15 @@ def on_press(key):
 		if key.char == 'q':
 			print("quit")
 			ser.close()
-			break
+			#break
 	except AttributeError:
 		pass
 
 def main():
-    ser = serial.Serial('COM6', 9600)
-    #if i press "p" send "p" to arduino
+	ser = serial.Serial('COM6', 9600)
     
-
 	with keyboard.Listener(on_press =on_press, on_release=on_release) as listener:
 		listener.join()
-        
 
 
 if __name__ == '__main__':

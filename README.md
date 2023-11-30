@@ -135,9 +135,11 @@ Figure 4: top view of the cameras configuration
 
 While active the Raspberry Pi was connected to a separate monitor (not shown in the pictures) and it was used to develop the detection mechanism, whose final version is the Python script experiment.py.
 
-An example of the command line used to run the code is shown in Figure 5.
+An example of the command line used to run the code is below:
 
-Figure 5: command line execution
+```console
+python experiment.py 2
+```
 
 The only argument is the type of the sphere used, with 1 being the smallest and 4 the greatest. Other numbers are used to indicate test runs rather than actual measure and the data is stored in the file times1.csv. The core of this script is the trigger function, which takes as only parameter a string that indicates which camera to activate (we used "std" for the bottom camera and "" for the top camera).
 

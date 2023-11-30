@@ -17,7 +17,7 @@ def main(args):
     
     dataframe = pd.DataFrame(columns=["ball_type","delta_t"], index=None)
 	#file in which the data is saved. Some data lines are to be discarded due to malfunctionings of the camera
-    data_file_path="times1.csv"
+    data_file_path="trigger_chrono_data/times1.csv"
 
 
     def saveVideo(frames, path, fps=29):

@@ -11,7 +11,7 @@ This procedure however often comes with multiple sources of systematic errors wh
 
 During the hackathon we sought to eliminate, or at least reduce, some of these sources of error by designing a new measurement process along with an automatic ball release mechanism with the help of **Arduino, Raspberry Pi and OpenCV**.
 
-In particular we have implemented a **drop mechanism** that uses an electromagnet to hold the metal ball and release it at the press of a button on the keyboard.
+In particular, we have implemented a **drop mechanism** that uses an electromagnet to hold the metal ball and release it at the press of a button on the keyboard.
 While for the measurements of the falling time we have followed two approaches, first a double camera chronometer and then a single camera **tracking with Kalman filtering** 
 
 ## Part 1: release mechanism using an electromagnet
@@ -26,7 +26,7 @@ Figure 1: focus on the support and the Arduino processor
 
 Figure 2: focus on the electromagnet, right above the surface of the liquid
 
-The Arduino processor, to which the electromagnet was attached, was also linked to a separate computer. There a python script, the file ardcontroller.py, was being run, while on the processor the script hackathonlab.ino was loaded, so that the release mechanism could be controlled remotely.
+The Arduino processor, to which the electromagnet was attached, was also linked to a separate computer. There a python script, the file ardcontroller.py, was being run, while on the processor the script hackathonlab.ino was loaded so that the release mechanism could be controlled remotely.
 
 ## Part 1.1: Problems with the electromagnet configuration
 
@@ -35,7 +35,10 @@ Moreover to make the drop "smooth" we had to raise the level of the glycerine cl
 However, these additional effects were not investigated due to the lack of time.
 
 ## Part 2.a: Tracking of the falling ball using Kalman Filters
-Tracking a falling balls requires two steps, detection and tracking, the first refers to the process of identifying the object in the frames and the second involves predicting the ball's position in subsequent frames. 
+![](https://github.com/GiovanniLag/hackathon_lab/blob/main/readMe_files/result_1.gif)
+In the gif above the red circle is the detection while the yellow one is the tracking.
+
+Tracking falling balls requires two steps, detection and tracking, the first refers to the process of identifying the object in the frames and the second involves predicting the ball's position in subsequent frames. 
 
 ### Detection
 To detect the ball within a frame, our approach involves utilising a pair of frames and calculating the difference between them. Initially, we apply a series of filters to these frames:

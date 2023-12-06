@@ -36,7 +36,7 @@ However, these additional effects were not investigated due to the lack of time.
 
 ## Part 2.a: Tracking of the falling ball using Kalman Filters
 ![](https://github.com/GiovanniLag/hackathon_lab/blob/main/readMe_files/result_1.gif)
-In the gif above the red circle is the detection while the yellow one is the tracking.
+<br> In the gif above the red circle is the detection while the yellow one is the tracking.
 
 Tracking falling balls requires two steps, detection and tracking, the first refers to the process of identifying the object in the frames and the second involves predicting the ball's position in subsequent frames. 
 

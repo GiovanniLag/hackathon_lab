@@ -1,4 +1,4 @@
-#  Esperimento Glicerina
+#  Glycerin experiment
 
 #### Abstract
 
@@ -16,7 +16,7 @@ While for the measurements of the falling time we have followed two approaches, 
 
 ## Part 1: release mechanism using an electromagnet
 
-The problems related with the release of the ball have been solved by using an electromagnet which, being mounted on a proper support (Figs below) made it possible to align the magnet with the axis of the cylinder. This way it was possible to be sure that the sphere was always being released at the centre of the liquid surface, so that the additional friction related to the cylinder wall could be avoided.
+The problems related with the release of the ball have been solved by using an electromagnet which, being mounted on a proper support (figures below) made it possible to align the magnet with the axis of the cylinder. This way it was possible to be sure that the sphere was always being released at the centre of the liquid surface, so that the additional friction related to the cylinder wall could be avoided.
 
 ![](https://cdn.mathpix.com/cropped/2023_11_29_42a5acf52d1c158ad80dg-1.jpg?height=577&width=851&top_left_y=1468&top_left_x=594)
 
